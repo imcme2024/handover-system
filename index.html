@@ -962,7 +962,7 @@ async function addStaff() {
   staffList.push(name);
   input.value = "";
   renderStaffChips();
-  try { await sheetsUpdate("担当者リスト!A1:A" + staffList.length, staffList.map(n => [n])); } catch(e) {}
+  try { await sheetsUpdate("staff!A1:A" + staffList.length, staffList.map(n => [n])); } catch(e) {}
 }
 
 async function removeStaff(name) {
@@ -971,7 +971,7 @@ async function removeStaff(name) {
   selectedAuthors = selectedAuthors.filter(n => n !== name);
   updateAuthorTriggerBtn();
   renderStaffChips();
-  try { await sheetsUpdate("担当者リスト!A1:A" + staffList.length, staffList.map(n => [n])); } catch(e) {}
+  try { await sheetsUpdate("staff!A1:A" + staffList.length, staffList.map(n => [n])); } catch(e) {}
 }
 
 function openAuthorPopup() {
@@ -1062,8 +1062,8 @@ async function loadData() {
     }
 
     const result = await sheetsBatchGet([
-      "'申し送り'!A:G", "'OP室申し送り'!A:G", "'血液浄化申し送り'!A:U",
-      "'担当者リスト'!A:A", "'血液浄化リスト'!A1"
+      "handover!A:G", "op!A:G", "hd!A:U",
+      "staff!A:A", "hdlists!A1"
     ]);
 
     const vr = result.valueRanges || [];
@@ -1072,7 +1072,7 @@ async function loadData() {
     hdData = parseSheetRows(vr[2]?.values);
 
     const staffValues = vr[3]?.values || [];
-    const newStaff = staffValues.flat().filter(n => n);
+    const newStaff = staffValues.flat().filter(n => n && n !== "担当者");
     if (newStaff.length > 0) staffList.splice(0, staffList.length, ...newStaff);
 
     const hdListsRaw = vr[4]?.values?.[0]?.[0];
@@ -1198,7 +1198,7 @@ async function addStaff() {
   renderStaffChips();
   renderAuthorCheckboxes();
   // GASに保存
-  await sheetsUpdate("担当者リスト!A1:A" + staffList.length, staffList.map(n => [n]));
+  await sheetsUpdate("staff!A1:A" + staffList.length, staffList.map(n => [n]));
 }
 
 async function removeStaff(name) {
@@ -1208,7 +1208,7 @@ async function removeStaff(name) {
   updateAuthorTrigger();
   renderStaffChips();
   renderAuthorCheckboxes();
-  await sheetsUpdate("担当者リスト!A1:A" + staffList.length, staffList.map(n => [n]));
+  await sheetsUpdate("staff!A1:A" + staffList.length, staffList.map(n => [n]));
 }
 
 // -----------------------------------------------
@@ -1382,7 +1382,7 @@ function removeHdListItem(key, val) {
 
 async function saveHdLists() {
   try {
-    await sheetsUpdate("血液浄化リスト!A1", [[JSON.stringify(hdLists)]]);
+    await sheetsUpdate("hdlists!A1", [[JSON.stringify(hdLists)]]);
   } catch(e) {}
 }
 
@@ -1459,7 +1459,7 @@ async function addHdEntry() {
       entry.recorder, entry.handover, entry.uroDr, entry.orderDr,
       entry.nextWhen, entry.nextWhere, entry.drContact, entry.crrtOrder, entry.note,
       new Date().toISOString()];
-    await addRowToSheet("血液浄化申し送り", hdRow);
+    await addRowToSheet("hd", hdRow);
     const idx = hdData.findIndex(e => e.id === entry.id);
     if (idx !== -1) hdData[idx].id = hdId;
     renderHdList();
@@ -1471,7 +1471,7 @@ async function deleteHdEntry(id) {
   if (!confirm("この記録を削除しますか？")) return;
   hdData = hdData.filter(e => String(e.id) !== String(id));
   renderHdList();
-  try { await deleteRowFromSheet("血液浄化申し送り", id); } catch(e) {}
+  try { await deleteRowFromSheet("hd", id); } catch(e) {}
 }
 
 function renderHdList() {
@@ -2046,7 +2046,7 @@ async function applyFormat(id) {
   render();
   // GASにも保存
   try {
-    await updateRowInSheet("申し送り", id, { content: formatted });
+    await updateRowInSheet("handover", id, { content: formatted });
   } catch(e) {}
 }
 
@@ -2239,7 +2239,7 @@ function submitCatInline(catKey, dateArg) {
   showToast("✓ 追加しました");
 
   const realId = generateId();
-  addRowToSheet("申し送り", [realId, date, catKey, author, content, new Date().toISOString(), JSON.stringify(imgUrls)])
+  addRowToSheet("handover", [realId, date, catKey, author, content, new Date().toISOString(), JSON.stringify(imgUrls)])
   .then(() => {
     const i = data.findIndex(e => e.id === tempId);
     if (i !== -1) {
@@ -2720,7 +2720,7 @@ function submitInlineEntryOp() {
     }
 
     const realId = generateId();
-    addRowToSheet("OP室申し送り", [realId, date, "ongoing", item.author, item.content, new Date().toISOString(), "[]"])
+    addRowToSheet("op", [realId, date, "ongoing", item.author, item.content, new Date().toISOString(), "[]"])
     .then(() => {
       const i = data.findIndex(e => e.id === tempId);
       if (i !== -1) {
@@ -2840,7 +2840,7 @@ function submitInlineEntry() {
     }
 
     const realId3 = generateId();
-    addRowToSheet("申し送り", [realId3, date, category, item.author, item.content, new Date().toISOString(), JSON.stringify(item.images || [])])
+    addRowToSheet("handover", [realId3, date, category, item.author, item.content, new Date().toISOString(), JSON.stringify(item.images || [])])
     .then(() => {
       const i = data.findIndex(e => e.id === tempId);
       if (i !== -1) {
