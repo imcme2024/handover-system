@@ -780,14 +780,8 @@
 </div>
 
 <script>
-// 認証コールバック処理（ページ読み込み時）
-if (window.location.hash.includes("access_token")) {
-  handleAuthCallback();
-}
-
 const CLIENT_ID = "499594808691-640oltl6a6fgk8pjj4ndqs9c7re9hgjc.apps.googleusercontent.com";
 const SPREADSHEET_ID = "1NTMv07WwdHeQ9XKSFoFg0goPXP8jWl1rHHlqQeTwmTA";
-const DRIVE_FOLDER_ID = "1cf-BObJd5Xd4GTpWadm6TSfmTdb3W4vD";
 const SCOPES = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive";
 
 let accessToken = null;
@@ -2867,6 +2861,10 @@ function submitInlineEntry() {
 }
 
 renderStaffChips();
+// 認証コールバック処理（ページ読み込み時）
+if (window.location.hash.includes("access_token")) {
+  handleAuthCallback();
+}
 loadData();
 </script>
 </body>
