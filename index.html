@@ -874,8 +874,9 @@ async function sheetsUpdate(range, values) {
 
 async function sheetsBatchGet(ranges) {
   await ensureAuth();
+  // シート名を正しくエンコード（日本語対応）
   const params = ranges.map(r => "ranges=" + encodeURIComponent(r)).join("&");
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${params}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values:batchGet?${params}&majorDimension=ROWS`;
   const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
   if (!res.ok) throw new Error("Sheets batchGet error: " + res.status);
   return res.json();
@@ -1061,8 +1062,8 @@ async function loadData() {
     }
 
     const result = await sheetsBatchGet([
-      "申し送り!A:G", "OP室申し送り!A:G", "血液浄化申し送り!A:U",
-      "担当者リスト!A:A", "血液浄化リスト!A1"
+      "'申し送り'!A:G", "'OP室申し送り'!A:G", "'血液浄化申し送り'!A:U",
+      "'担当者リスト'!A:A", "'血液浄化リスト'!A1"
     ]);
 
     const vr = result.valueRanges || [];
